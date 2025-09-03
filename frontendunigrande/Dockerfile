@@ -32,8 +32,8 @@ RUN echo "ServerName localhost" | tee /etc/apache2/conf-available/fqdn.conf && \
 
 # Configurar o Virtual Host
 RUN echo '<VirtualHost *:80>\n\
-    DocumentRoot /var/www/unigrande/frontend\n\
-    <Directory /var/www/unigrande/frontend>\n\
+    DocumentRoot /var/www/unigrande/frontendunigrande\n\
+    <Directory /var/www/unigrande/frontendunigrande>\n\
         Options Indexes FollowSymLinks\n\
         AllowOverride All\n\
         Require all granted\n\
@@ -41,7 +41,7 @@ RUN echo '<VirtualHost *:80>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Copie os arquivos PHP para o diretório raiz do Apache
-COPY . /var/www/unigrande/frontend
+COPY . /var/www/unigrande/frontendunigrande
 
 # Exponha a porta 80
 EXPOSE 80
