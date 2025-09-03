@@ -1,0 +1,10 @@
+[flake8]
+max-line-length = 130
+exclude =
+    .git,
+    build,
+    dist,
+    .venv
+    migrations
+max-complexity = 10
+docstring_style=sphinx
