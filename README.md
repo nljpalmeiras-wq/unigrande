@@ -6,7 +6,7 @@ docker compose up -d --build
 # caso de erro de permissão no uso do entrypoint do banco de dados rode
 cd backendunigrande 
 
-# depois modifique a permissão do arquivo
+# depois modifique a permissão do arquivo e rode o comando docker
 chmod +x entrypoint.sh
 
 ### Para rodar o padrão de qualidade código
