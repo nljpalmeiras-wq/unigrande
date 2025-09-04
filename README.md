@@ -24,8 +24,7 @@ docker-compose exec backendunigrande /bin/bash
 
 # acessar o container 
   docker-compose exec backendunigrande /bin/bash
-# ative o ambiente virtual
-   source venv/bin/activate
+  
 # Execute o comando para inicializar o aerich no ambiente
    aerich init -t app.config.db.TORTOISE_ORM
 # Crie as tabelas e aplique as migrações já existentes:
@@ -51,7 +50,7 @@ docker compose exec backendunigrande pytest -v
    sudo -u postgres psql
    ALTER DATABASE unigrande_db OWNER TO unigrande_user;
    \l
-   
+
 # status code de uso padrão
 HTTP_100_CONTINUE
 HTTP_101_SWITCHING_PROTOCOLS
