@@ -31,10 +31,10 @@ docker-compose exec backendunigrande /bin/bash
    aerich init-db
 # Se precisar gerar novas migrações após alterar seus modelos
    aerich migrate
-# Execute o comando abaixo para inspecionar o SQL gerado pelo Aerich
-   docker-compose exec backendunigrande aerich upgrade --dry-run
 # Para aplicar as migrações no banco de dados
    aerich upgrade
+# Execute o comando abaixo para inspecionar o SQL gerado pelo Aerich
+   docker-compose exec backendunigrande aerich upgrade --dry-run
 
 ### Para rodar testes execute o seguinte comando
 
