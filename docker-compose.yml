@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./frontend:/var/www/unigrande/frontendunigrande
+      - ./frontendunigrande:/var/www/unigrande/frontendunigrande
     restart: always
     container_name: frontendunigrande
     networks:

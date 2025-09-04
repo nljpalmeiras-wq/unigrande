@@ -6,7 +6,7 @@ docker compose up -d --build
 # caso de erro de permissão no uso do entrypoint do banco de dados rode
 cd backendunigrande 
 
-# depois modifique a permissão do arquivo
+# depois modifique a permissão do arquivo e rode o comando docker
 chmod +x entrypoint.sh
 
 ### Para rodar o padrão de qualidade código
@@ -22,6 +22,20 @@ docker-compose exec backendunigrande /bin/bash
 # name: Run flake8
    flake8 .
 
+# acessar o container 
+  docker-compose exec backendunigrande /bin/bash
+  
+# Execute o comando para inicializar o aerich no ambiente
+   aerich init -t app.config.db.TORTOISE_ORM
+# Crie as tabelas e aplique as migrações já existentes:
+   aerich init-db
+# Se precisar gerar novas migrações após alterar seus modelos
+   aerich migrate
+# Para aplicar as migrações no banco de dados
+   aerich upgrade
+# Execute o comando abaixo para inspecionar o SQL gerado pelo Aerich
+   docker-compose exec backendunigrande aerich upgrade --dry-run
+
 ### Para rodar testes execute o seguinte comando
 
 docker compose exec backendunigrande pytest -v
@@ -36,22 +50,6 @@ docker compose exec backendunigrande pytest -v
    sudo -u postgres psql
    ALTER DATABASE unigrande_db OWNER TO unigrande_user;
    \l
-
-# acessar o container 
-  docker-compose exec backendunigrande /bin/bash
-# ative o ambiente virtual
-   source venv/bin/activate
-# Execute o comando para inicializar o aerich no ambiente
-   aerich init -t app.config.db.TORTOISE_ORM
-# Crie as tabelas e aplique as migrações já existentes:
-   aerich init-db
-# Se precisar gerar novas migrações após alterar seus modelos
-   aerich migrate
-# Execute o comando abaixo para inspecionar o SQL gerado pelo Aerich
-   docker-compose exec backendunigrande aerich upgrade --dry-run
-# Para aplicar as migrações no banco de dados
-   aerich upgrade
-
 
 # status code de uso padrão
 HTTP_100_CONTINUE
