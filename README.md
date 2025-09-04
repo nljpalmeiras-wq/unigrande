@@ -22,21 +22,6 @@ docker-compose exec backendunigrande /bin/bash
 # name: Run flake8
    flake8 .
 
-### Para rodar testes execute o seguinte comando
-
-docker compose exec backendunigrande pytest -v
-
-# configurando o migrations com docker
-   docker-compose exec backendunigrande aerich init -t app.config.db.TORTOISE_ORM
-   docker-compose exec backendunigrande aerich init-db
-
-# configurando o migrations manualmente
-
-# primeiro coloque o usuário unigrande_user como owner do banco pois ele estará como postgres
-   sudo -u postgres psql
-   ALTER DATABASE unigrande_db OWNER TO unigrande_user;
-   \l
-
 # acessar o container 
   docker-compose exec backendunigrande /bin/bash
 # ative o ambiente virtual
@@ -52,7 +37,21 @@ docker compose exec backendunigrande pytest -v
 # Para aplicar as migrações no banco de dados
    aerich upgrade
 
+### Para rodar testes execute o seguinte comando
 
+docker compose exec backendunigrande pytest -v
+
+# configurando o migrations com docker
+   docker-compose exec backendunigrande aerich init -t app.config.db.TORTOISE_ORM
+   docker-compose exec backendunigrande aerich init-db
+
+# configurando o migrations manualmente
+
+# primeiro coloque o usuário unigrande_user como owner do banco pois ele estará como postgres
+   sudo -u postgres psql
+   ALTER DATABASE unigrande_db OWNER TO unigrande_user;
+   \l
+   
 # status code de uso padrão
 HTTP_100_CONTINUE
 HTTP_101_SWITCHING_PROTOCOLS
