@@ -2,7 +2,7 @@ services:
   frontendunigrande:
     build: ./frontendunigrande
     ports:
-      - "8089:80"
+      - "8090:80"
     environment:
       APP_ENV: ${APP_ENV}
       BASE_URL: ${BASE_URL}
@@ -11,7 +11,7 @@ services:
       - .env
     volumes:
       - ./frontendunigrande:/var/www/unigrande/frontendunigrande
-    restart: always
+    restart: no
     container_name: frontendunigrande
     networks:
       - unigrande-network
@@ -23,7 +23,7 @@ services:
       - "5015:5000"
     volumes:
       - ./backendunigrande:/usr/src/app
-    restart: always
+    restart: no
     container_name: backendunigrande
     environment:
       ENVIRONMENT: ${ENVIRONMENT}
@@ -53,7 +53,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5431:5432"
-    restart: always
+    restart: no
     container_name: dbunigrande
     networks:
       - unigrande-network
@@ -65,7 +65,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5051:80"
-    restart: always
+    restart: no
     container_name: pgadminunigrande
     networks:
       - unigrande-network
