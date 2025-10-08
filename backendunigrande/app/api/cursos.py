@@ -28,7 +28,7 @@ async def error_500(e: Exception):
 # ----------------------------------------------------------------------
 # Curso
 # ----------------------------------------------------------------------
-@router.post("/cursos", response_model=CursoResponse, status_code=201)
+@router.post("/create-curso", response_model=CursoResponse, status_code=201)
 async def create_curso(payload: CursoCreate):
     async with in_transaction():
         try:
@@ -40,7 +40,7 @@ async def create_curso(payload: CursoCreate):
             await error_500(e)
 
 
-@router.get("/cursos/{id}", response_model=CursoResponse)
+@router.get("/buscar-curso/{id}", response_model=CursoResponse)
 async def get_curso(id: int):
     try:
         obj = await CursoService.get(id)
@@ -51,7 +51,7 @@ async def get_curso(id: int):
         await error_500(e)
 
 
-@router.get("/cursos", response_model=List[CursoResponse])
+@router.get("/listar-cursos", response_model=List[CursoResponse])
 async def list_cursos():
     try:
         rows = await CursoService.list_all()
@@ -60,7 +60,7 @@ async def list_cursos():
         await error_500(e)
 
 
-@router.put("/cursos/{id}", response_model=CursoResponse)
+@router.put("/atualizar-curso/{id}", response_model=CursoResponse)
 async def update_curso(id: int, payload: CursoUpdate):
     async with in_transaction():
         try:
@@ -72,7 +72,7 @@ async def update_curso(id: int, payload: CursoUpdate):
             await error_500(e)
 
 
-@router.delete("/cursos/{id}", status_code=204)
+@router.delete("/delete-curso/{id}", status_code=204)
 async def delete_curso(id: int):
     async with in_transaction():
         try:
