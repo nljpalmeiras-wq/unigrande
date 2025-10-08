@@ -7,7 +7,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-# from app.api.routes import api_router
+from app.api.routes import api_router
 from app.auth.utils import setup_logger
 from app.config.db import init_db, test_connection
 from app.config.settings import ALLOWED_ORIGINS, OPENAPI_SCHEMA
@@ -41,7 +41,12 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down...")
 
 
-app = FastAPI(openapi_schema=OPENAPI_SCHEMA, lifespan=lifespan)
+app = FastAPI(
+    title="Unigrande API",
+    version="1.0.0",
+    openapi_schema=OPENAPI_SCHEMA,
+    lifespan=lifespan,
+)
 
 # Configuração do Limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -61,7 +66,7 @@ app.add_middleware(
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 
 # Rotas
-# app.include_router(api_router)
+app.include_router(api_router)
 
 
 # Rota básica

@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS "cursos" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "nome" VARCHAR(40) NOT NULL,
     "total_creditos" INT NOT NULL,
-    "idt_prof" INT REFERENCES "professores" ("id") ON DELETE CASCADE
+    "coordenador_id" INT REFERENCES "professores" ("id") ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS "idx_cursos_nome_7ce005" ON "cursos" ("nome");
 COMMENT ON TABLE "cursos" IS 'CURSOS';

@@ -33,9 +33,8 @@ class Curso(models.Model):
     coordenador = fields.ForeignKeyField(
         "models.Professor",
         related_name="cursos_coordenados",
-        null=True,  # pode não existir ainda
-        on_delete=fields.CASCADE,
-        source_field="idt_prof",  # mantém a ideia do ER
+        null=True,  # permite ser nulo
+        on_delete=fields.SET_NULL,  # se professor for apagado, define NULL
     )
 
     class Meta:

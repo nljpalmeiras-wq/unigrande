@@ -13,7 +13,7 @@ log = logging.getLogger("uvicorn")
 
 # Define a URL base com base no ambiente
 DATABASE_URL = os.getenv("DATABASE_URL")
- 
+
 TORTOISE_ORM = {
     "connections": {"default": DATABASE_URL},
     "apps": {
