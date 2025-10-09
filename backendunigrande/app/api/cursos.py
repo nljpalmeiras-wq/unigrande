@@ -19,6 +19,9 @@ router = APIRouter()
 
 # =============== util de erro ===============
 async def error_500(e: Exception):
+    # se já for HTTPException (ex.: 404), apenas repasse
+    if isinstance(e, HTTPException):
+        raise e
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=f"Ocorreu um erro inesperado: {str(e)}",
@@ -47,6 +50,8 @@ async def get_curso(id: int):
         return await CursoService.response(obj)
     except (DoesNotExist, MultipleObjectsReturned):
         raise HTTPException(404, "Curso não encontrado")
+    except HTTPException as e:  # <- adicione isto
+        raise e
     except Exception as e:
         await error_500(e)
 
@@ -54,8 +59,8 @@ async def get_curso(id: int):
 @router.get("/listar-cursos", response_model=List[CursoResponse])
 async def list_cursos():
     try:
-        rows = await CursoService.list_all()
-        return [await CursoService.response(x) for x in rows]
+        lista_cursos = await CursoService.list_all()
+        return [await CursoService.response(curso) for curso in lista_cursos]
     except Exception as e:
         await error_500(e)
 
