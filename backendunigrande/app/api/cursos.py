@@ -19,7 +19,12 @@ router = APIRouter()
 
 # =============== util de erro ===============
 async def error_500(e: Exception):
-    # se já for HTTPException (ex.: 404), apenas repasse
+    """
+    Converte exceções inesperadas em HTTP 500 para respostas consistentes no Swagger.
+
+    Se `e` já for uma HTTPException (por exemplo, 404 lançado no Service),
+    apenas repassa a exceção sem alterá-la.
+    """
     if isinstance(e, HTTPException):
         raise e
     raise HTTPException(
@@ -31,14 +36,33 @@ async def error_500(e: Exception):
 # ----------------------------------------------------------------------
 # Curso
 # ----------------------------------------------------------------------
-@router.post("/create-curso", response_model=CursoResponse, status_code=201)
+@router.post(
+        "/create-curso", 
+        response_model=CursoResponse, 
+        status_code=201,
+        summary="Cria um novo curso",
+        description="""
+        Cria um **curso**.
+
+        # Observações
+        - O campo `coordenador_id` é **opcional**.  
+        - Caso informado, deve referenciar um `Professor.id` válido (FK).
+
+        # Exemplo de payload
+        ```json
+            {
+                "id": 26,
+                "nome": "Ciência da Computação - Tarde/Noite",
+                "total_creditos": 200,
+                "coordenador_id": 1410
+            }
+        ```
+        """)
 async def create_curso(payload: CursoCreate):
     async with in_transaction():
         try:
             obj = await CursoService.create(payload)
             return await CursoService.response(obj)
-        except IntegrityError as e:
-            raise HTTPException(409, f"Restrição de integridade: {e}")
         except Exception as e:
             await error_500(e)
 
@@ -50,7 +74,7 @@ async def get_curso(id: int):
         return await CursoService.response(obj)
     except (DoesNotExist, MultipleObjectsReturned):
         raise HTTPException(404, "Curso não encontrado")
-    except HTTPException as e:  # <- adicione isto
+    except HTTPException as e:
         raise e
     except Exception as e:
         await error_500(e)
