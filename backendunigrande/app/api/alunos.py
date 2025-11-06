@@ -1,19 +1,27 @@
 # app/api/alunos.py
 from __future__ import annotations
 
+from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from tortoise.exceptions import (DoesNotExist, IntegrityError,
                                  MultipleObjectsReturned)
 from tortoise.transactions import in_transaction
 
 from app.auth.utils import setup_logger
-from app.schemas.unigrande import AlunoCreate, AlunoResponse, AlunoUpdate
+from app.schemas.unigrande import (AlunoCreate, AlunoListPaginated,
+                                   AlunoResponse, AlunoUpdate)
 from app.services.unigrande import AlunoService
 
 logger = setup_logger()
 router = APIRouter()
+
+# BASE_DIR = app/
+BASE_DIR = Path(__file__).resolve().parent.parent
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
 # =============== util de erro ===============
@@ -105,3 +113,63 @@ async def delete_aluno(matricula: int):
             raise e
         except Exception as e:
             await error_500(e)
+
+
+@router.get("/listar-alunos-paginado", response_model=AlunoListPaginated)
+async def list_alunos_paginado(limit: int = 10, offset: int = 0):
+    """
+    Lista alunos com paginação (limit/offset).
+    Exemplo:
+      /alunos/listar-alunos-paginado?limit=20&offset=0
+    """
+    try:
+        rows, total = await AlunoService.list_paginated(limit=limit, offset=offset)
+        return AlunoListPaginated(
+            total=total,
+            limit=limit,
+            offset=offset,
+            results=[await AlunoService.response(x) for x in rows],
+        )
+    except Exception as e:
+        await error_500(e)
+
+
+@router.get("/list-alunos/view", response_class=HTMLResponse)
+async def alunos_view(
+    request: Request,
+    limit: int = 10,
+    offset: int = 0,
+):
+    """
+    Tela HTML com listagem paginada de alunos.
+    Exemplo:
+      /alunos/view?limit=20&offset=0
+    """
+    try:
+        rows, total = await AlunoService.list_paginated(limit=limit, offset=offset)
+        alunos = [await AlunoService.response(x) for x in rows]
+
+        # cálculo básico de paginação
+        page = (offset // limit) + 1 if limit > 0 else 1
+        total_pages = (total + limit - 1) // limit if limit > 0 else 1
+
+        next_offset = offset + limit if page < total_pages else None
+        prev_offset = offset - limit if offset - limit >= 0 else None
+
+        return templates.TemplateResponse(
+            "alunos.html",
+            {
+                "request": request,
+                "titulo_pagina": "Lista de Alunos",
+                "alunos": alunos,
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "page": page,
+                "total_pages": total_pages,
+                "next_offset": next_offset,
+                "prev_offset": prev_offset,
+            },
+        )
+    except Exception as e:
+        await error_500(e)

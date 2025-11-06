@@ -3,8 +3,7 @@ from __future__ import annotations
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Response, status
-from tortoise.exceptions import (DoesNotExist, IntegrityError,
-                                 MultipleObjectsReturned)
+from tortoise.exceptions import DoesNotExist, MultipleObjectsReturned
 from tortoise.transactions import in_transaction
 
 from app.auth.utils import setup_logger
@@ -37,11 +36,11 @@ async def error_500(e: Exception):
 # Curso
 # ----------------------------------------------------------------------
 @router.post(
-        "/create-curso", 
-        response_model=CursoResponse, 
-        status_code=201,
-        summary="Cria um novo curso",
-        description="""
+    "/create-curso",
+    response_model=CursoResponse,
+    status_code=201,
+    summary="Cria um novo curso",
+    description="""
         Cria um **curso**.
 
         # Observações
@@ -57,7 +56,8 @@ async def error_500(e: Exception):
                 "coordenador_id": 1410
             }
         ```
-        """)
+        """,
+)
 async def create_curso(payload: CursoCreate):
     async with in_transaction():
         try:

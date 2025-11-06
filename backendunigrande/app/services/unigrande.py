@@ -468,6 +468,16 @@ class AlunoService:
         return await Aluno.all().prefetch_related("curso")
 
     @staticmethod
+    async def list_paginated(limit: int = 10, offset: int = 0):
+        """
+        Retorna (rows, total) para paginação.
+        """
+        qs = Aluno.all().offset(offset).limit(limit).prefetch_related("curso")
+        rows = await qs
+        total = await Aluno.all().count()
+        return rows, total
+
+    @staticmethod
     async def response(obj: Aluno) -> AlunoResponse:
         return AlunoResponse(
             matricula=obj.matricula,

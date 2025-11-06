@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ titulo_pagina }}</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 40px;
+      }
+      h1 {
+        color: #2d3748;
+        margin-bottom: 8px;
+        font-size: 1.8em;
+      }
+      .subtitle {
+        color: #4a5568;
+        margin-bottom: 20px;
+        font-size: 0.95em;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      th {
+        background-color: #edf2f7;
+        font-weight: bold;
+        color: #2d3748;
+        font-size: 0.9em;
+      }
+      tr:hover {
+        background-color: #f7fafc;
+      }
+      .center {
+        text-align: center;
+      }
+      .pagination {
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.9em;
+      }
+      .pagination a {
+        padding: 6px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        border: 1px solid #cbd5e0;
+        color: #2b6cb0;
+      }
+      .pagination a:hover {
+        background-color: #ebf8ff;
+      }
+      .pagination span {
+        color: #4a5568;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{{ titulo_pagina }}</h1>
+    <div class="subtitle">
+      Total de alunos: <strong>{{ total }}</strong>
+      {% if total_pages %}
+        • Página {{ page }} de {{ total_pages }}
+      {% endif %}
+    </div>
+
+    {% if alunos %}
+    <table>
+      <thead>
+        <tr>
+          <th>Matrícula</th>
+          <th>Nome</th>
+          <th>Curso</th>
+          <th>Créditos</th>
+          <th>MGP</th>
+          <th>Data de Nascimento</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for aluno in alunos %}
+        <tr>
+          <td class="center">{{ aluno.matricula }}</td>
+          <td>{{ aluno.nome }}</td>
+          <td>{{ aluno.curso.nome if aluno.curso else '-' }}</td>
+          <td class="center">{{ aluno.total_creditos }}</td>
+          <td class="center">{{ aluno.mgp }}</td>
+          <td>{{ aluno.data_nascimento }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      {% if prev_offset is not none %}
+      <a href="?limit={{ limit }}&offset={{ prev_offset }}">&laquo; Anterior</a>
+      {% endif %}
+
+      <span>
+        Mostrando
+        {% if total > 0 %}
+          {{ offset + 1 }}
+          -
+          {{ offset + alunos|length }}
+        {% else %}
+          0
+        {% endif %}
+        de {{ total }}
+      </span>
+
+      {% if next_offset is not none %}
+      <a href="?limit={{ limit }}&offset={{ next_offset }}">Próxima &raquo;</a>
+      {% endif %}
+    </div>
+    {% else %}
+    <p>Nenhum aluno cadastrado ainda.</p>
+    {% endif %}
+  </body>
+</html>

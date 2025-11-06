@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -235,6 +235,13 @@ class AlunoResponse(AlunoBase):
     matricula: int
     curso: CursoSummary
     model_config = ConfigDict(from_attributes=True)
+
+
+class AlunoListPaginated(BaseModel):
+    total: int  # total de alunos na base
+    limit: int  # limite solicitado
+    offset: int  # deslocamento solicitado
+    results: List[AlunoResponse]
 
 
 # =========================
