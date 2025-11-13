@@ -361,6 +361,8 @@ sudo systemctl status fastapi
 Instalar módulos:
 
 ```bash
+sudo apt update
+sudo apt install -y apache2
 sudo a2enmod proxy proxy_http ssl headers rewrite
 ```
 
