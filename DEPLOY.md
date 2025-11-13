@@ -195,6 +195,31 @@ sudo apt install -y python3-venv python3-pip python3-dev build-essential libpq-d
          GRANT ALL PRIVILEGES ON DATABASE unigrande_db TO unigrande_user;
      ```
 
+
+
+3. **Verificar o status do PostgreSQL:**
+
+   ```bash
+   sudo systemctl status postgresql
+   ```
+
+Criar e ativar venv:
+
+```bash
+cd /var/www/unigrande/backendunigrande
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Instalar libs:
+
+```bash
+pip install -U pip wheel
+pip install -r requirements.txt
+pip install python-dotenv
+```
+
+
    # para acessar o postgresql
    psql -U unigrande_user -d unigrande_db -h 127.0.0.1 -p 5432
 
@@ -251,30 +276,6 @@ sudo apt install -y python3-venv python3-pip python3-dev build-essential libpq-d
    # Reativar as restrições de chave estrangeira
    SET session_replication_role = DEFAULT;
 
-
-
-3. **Verificar o status do PostgreSQL:**
-
-   ```bash
-   sudo systemctl status postgresql
-   ```
-
-Criar e ativar venv:
-
-```bash
-cd /var/www/unigrande/backendunigrande
-python3 -m venv venv
-source venv/bin/activate
-```
-
-Instalar libs:
-
-```bash
-pip install -U pip wheel
-pip install -r requirements.txt
-pip install python-dotenv
-```
-
 ---
 
 # CONFIGURAR ARQUIVO `.env`
@@ -289,7 +290,7 @@ Exemplo:
 
 ```env
 ENVIRONMENT=production
-DATABASE_URL=postgres://arroto_user:senha@127.0.0.1:5432/arroto_db
+DATABASE_URL=postgres://unigrande_user:senha@127.0.0.1:5432/unigrande_db
 ALLOWED_ORIGINS=*
 ALLOWED_HOSTS=vps62676.publiccloud.com.br,localhost,127.0.0.1
 BASE_URL=https://vps62676.publiccloud.com.br
