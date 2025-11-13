@@ -14,12 +14,7 @@ from app.config.settings import ALLOWED_ORIGINS, OPENAPI_SCHEMA
 
 logger = setup_logger()
 
-ALLOWED_HOSTS = [
-    "api.unigrande.com",
-    "localhost",
-    "127.0.0.1",
-    "backendunigrande",
-]
+ALLOWED_HOSTS = ["*"]
 
 
 @asynccontextmanager

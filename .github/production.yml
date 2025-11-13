@@ -1,0 +1,151 @@
+name: "Deploy via SSH"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  code-quality:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.11]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: backendunigrande
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run black
+        run: black .
+
+      - name: Run isort
+        run: isort .
+
+      - name: Run isort check
+        run: isort . --check-only
+
+      - name: Run flake8
+        run: flake8 .
+
+  deploy-vps:
+    needs: [code-quality]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: backendunigrande
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+
+      - name: Configurar SSH (RSA)
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+      - name: Iniciar agente SSH e adicionar a chave
+        run: |
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+          ssh-add -l
+
+      - name: Configure git to use SSH
+        run: |
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+      # opcional: só precisa se essa mesma chave também estiver cadastrada como key no GitHub
+      - name: Testar Conexão SSH com o GitHub
+        run: |
+          ssh -T git@github.com || echo "SSH authentication successful, but no shell access"
+          ssh -T git@github.com 2>&1 | tee ssh_debug.log
+
+      - name: Criar arquivo de controle de deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            touch /var/www/unigrande/.deploy_lock
+            exit
+          EOF
+
+      - name: Atualizar código na VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            if [ ! -f /var/www/unigrande/.deploy_lock ]; then
+              echo "Deploy não autorizado! Arquivo de controle de deploy não encontrado."
+              exit 1
+            fi
+
+            cd /var/www/unigrande
+            git checkout main
+            git fetch --all
+            git reset --hard origin/main
+            git clean -df
+            git status
+
+            rm -f /var/www/unigrande/.deploy_lock
+          EOF
+
+      - name: Atualizar dependências da API
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            cd /var/www/unigrande/backendunigrande
+            if [ ! -d "venv" ]; then
+                python3 -m venv venv
+            fi
+            source venv/bin/activate
+            pip install -r requirements.txt
+            exit
+          EOF
+
+      - name: Expor variáveis de ambiente e reiniciar serviços
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            echo "ENVIRONMENT=${{ secrets.ENVIRONMENT }}"       | tee  /var/www/unigrande/.env > /dev/null
+            echo "TESTING=${{ secrets.TESTING }}"               | tee -a /var/www/unigrande/.env > /dev/null
+            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}"       | tee -a /var/www/unigrande/.env > /dev/null
+            echo "POSTGRES_DB_TEST=${{ secrets.POSTGRES_DB_TEST }}" | tee -a /var/www/unigrande/.env > /dev/null
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}"   | tee -a /var/www/unigrande/.env > /dev/null
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" | tee -a /var/www/unigrande/.env > /dev/null
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}"     | tee -a /var/www/unigrande/.env > /dev/null
+            echo "DATABASE_TEST_URL=${{ secrets.DATABASE_TEST_URL }}" | tee -a /var/www/unigrande/.env > /dev/null
+            echo "APP_ENV=${{ secrets.APP_ENV }}"               | tee -a /var/www/unigrande/.env > /dev/null
+            echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" | tee -a /var/www/unigrande/.env > /dev/null
+            echo "BASE_URL=${{ secrets.BASE_URL }}"             | tee -a /var/www/unigrande/.env > /dev/null
+            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}"         | tee -a /var/www/unigrande/.env > /dev/null
+            echo "DIRETORIO_DOCS=/var/www/docs"                 | tee -a /var/www/unigrande/.env > /dev/null
+            echo "PYTHONPATH=/var/www/unigrande/backendunigrande"        | tee -a /var/www/unigrande/.env > /dev/null
+
+            chmod 644 /var/www/unigrande/.env
+
+            systemctl daemon-reload
+            systemctl restart postgresql
+            systemctl restart fastapi
+            systemctl restart apache2
+            exit
+          EOF
+
+      - name: Migrations do banco de dados
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            cd /var/www/unigrande/backendunigrande
+            source venv/bin/activate
+            aerich upgrade
+            exit
+          EOF
